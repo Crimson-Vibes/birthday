@@ -502,10 +502,12 @@ section{
   bottom:18px;
   left:50%;
   transform:translateX(-50%);
-  font-size:38px;
+  font-size:42px;
   z-index:3;
+  width:55px;
+  text-align:center;
 }
-
+  
 .catch-item{
   position:absolute;
   font-size:27px;
@@ -1964,101 +1966,82 @@ document.title =
 
   }
 
+function spawn(){
 
-  function spawn(){
+  if(!running) return;
 
-    if(!running) return;
+  const item = document.createElement("span");
+  item.className = "catch-item";
 
+  item.textContent =
+    goodies[
+      Math.floor(
+        Math.random() * goodies.length
+      )
+    ];
 
-    const item =
-      document.createElement("span");
+  item.style.left =
+    (8 + Math.random() * 84) + "%";
 
-    item.className =
-      "catch-item";
+  const duration =
+    2.1 + Math.random() * 1.4;
 
+  item.style.animationDuration =
+    duration + "s";
 
-    item.textContent =
-      goodies[
-        Math.floor(
-          Math.random() *
-          goodies.length
-        )
-      ];
+  area.appendChild(item);
 
+  const checkCollision = setInterval(() => {
 
-    item.style.left =
-      (8 + Math.random() * 84) +
-      "%";
+    if(!running || !item.isConnected){
+      clearInterval(checkCollision);
+      return;
+    }
 
+    const a = item.getBoundingClientRect();
+    const p = player.getBoundingClientRect();
 
-    const duration =
-      2.1 + Math.random() * 1.4;
+    const hit =
+      a.bottom > p.top &&
+      a.top < p.bottom &&
+      a.right > p.left &&
+      a.left < p.right;
 
+    if(hit){
 
-    item.style.animationDuration =
-      duration + "s";
+      let points = 5;
 
+      if(item.textContent === "🎁")
+        points = 10;
 
-    area.appendChild(item);
+      if(item.textContent === "🎂")
+        points = 8;
 
+      score += points;
 
-    setTimeout(()=>{
+      scoreEl.textContent =
+        "Score: " + score;
 
-      if(!item.isConnected)
-        return;
+      item.remove();
+      clearInterval(checkCollision);
 
+      if(score >= 50)
+        end(true);
 
-      const a =
-        item.getBoundingClientRect();
+    }
 
-      const p =
-        player.getBoundingClientRect();
+  }, 50);
 
+  setTimeout(() => {
 
-      const hit =
-        a.bottom > p.top &&
-        a.top < p.bottom &&
-        a.right > p.left &&
-        a.left < p.right;
+    clearInterval(checkCollision);
 
+    if(item.isConnected)
+      item.remove();
 
-      if(hit){
+  }, duration * 1000);
 
-        let points = 5;
-
-
-        if(item.textContent === "🎁")
-          points = 10;
-
-
-        if(item.textContent === "🎂")
-          points = 8;
-
-
-        score += points;
-
-
-        scoreEl.textContent =
-          "Score: " + score;
-
-
-        item.remove();
-
-
-        if(score >= 50)
-          end(true);
-
-
-      }else{
-
-        item.remove();
-
-      }
-
-    },duration * 1000);
-
-  }
-
+}
 
   function end(won){
 
@@ -2086,7 +2069,6 @@ document.title =
         "Time! Score: " + score;
 
     }
-
 
     overlay.textContent =
       "Tap START to play again";
